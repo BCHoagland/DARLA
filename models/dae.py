@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from torchvision.utils import save_image
 
@@ -95,7 +94,7 @@ class DAE():
                 out = self.dae(data)
 
                 # calculate loss and update network
-                loss = F.mse_loss(data, out)
+                loss = torch.pow(data - out, 2).mean()
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()

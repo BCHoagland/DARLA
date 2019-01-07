@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from torchvision.utils import save_image
 
@@ -118,7 +117,7 @@ class BetaVAE():
                 out, mu, log_var = self.vae(data)
 
                 # calculate loss and update network
-                loss = F.mse_loss(dae.encode(data), dae.encode(out)) + (self.beta * KL(mu, log_var))
+                loss = torch.pow(dae.encode(data) - dae.encode(out), 2).mean() + (self.beta * KL(mu, log_var))
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
