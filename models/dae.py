@@ -1,13 +1,47 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
+from torchvision.utils import save_image
 
-class DAE(nn.Module):
-    def __init__(self):
-        super(DAE, self).__init__()
+import numpy as np
+from visdom import Visdom
+
+viz = Visdom()
+
+title = 'DAE Loss by Epoch'
+win = None
+
+def update_viz(epoch, loss):
+    global win, title
+
+    if win is None:
+        title = title
+
+        win = viz.line(
+            X=np.array([epoch]),
+            Y=np.array([loss]),
+            win=title,
+            opts=dict(
+                title=title,
+                fillarea=True
+            )
+        )
+    else:
+        viz.line(
+            X=np.array([epoch]),
+            Y=np.array([loss]),
+            win=win,
+            update='append'
+        )
+
+
+class Model(nn.Module):
+    def __init__(self, n_obs):
+        super(Model, self).__init__()
 
         self.encoder = nn.Sequential(
-            nn.Linear(28 * 28, 128),
+            nn.Linear(n_obs, 128),
             nn.ELU(),
             nn.Linear(128, 64),
             nn.ELU(),
@@ -19,7 +53,7 @@ class DAE(nn.Module):
             nn.ELU(),
             nn.Linear(64, 128),
             nn.ELU(),
-            nn.Linear(128, 28 * 28),
+            nn.Linear(128, n_obs),
             nn.Sigmoid()
         )
 
@@ -34,5 +68,43 @@ class DAE(nn.Module):
     def decode(self, z):
         return self.decoder(z)
 
-    def loss(self, x, x_hat):
-        return F.mse_loss(x_hat, x)
+class DAE():
+    def __init__(self, n_obs, num_epochs, batch_size, lr):
+        self.num_epochs = num_epochs
+        self.batch_size = batch_size
+        self.lr = lr
+
+        self.dae = Model(n_obs)
+
+    def encode(self, x):
+        return self.dae.encode(x)
+
+    def decode(self, z):
+        return self.dae.decode(z)
+
+    def train(self, history):
+        print('Training DAE...', end='', flush=True)
+
+        optimizer = optim.Adam(self.dae.parameters(), lr=self.lr)
+
+        for epoch in range(self.num_epochs):
+
+            minibatches = history.get_minibatches(self.batch_size, self.num_epochs)
+            for data in minibatches:
+
+                out = self.dae(data)
+
+                # calculate loss and update network
+                loss = F.mse_loss(data, out)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+            if epoch == 0 or epoch % 20 == 19:
+                pic = out.data.view(out.size(0), 1, 28, 28)
+                save_image(pic, 'img/dae_' + str(epoch+1) + '_epochs.png')
+
+            # plot loss
+            update_viz(epoch, loss.item())
+
+        print('DONE')
