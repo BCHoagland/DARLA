@@ -4,10 +4,9 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from models.dae import DAE
-from models.beta_vae import BetaVAE
+from dae.dae import DAE
+from beta_vae.beta_vae import BetaVAE
 from history import History
-from visualize import *
 
 # hyperparameters
 num_epochs = 100
@@ -25,8 +24,15 @@ history = History()
 
 # fill autoencoder training history with examples
 print('Filling history...', end='', flush=True)
-dataset = MNIST('data', transform=transforms.ToTensor(), download=True)
+
+transformation = transforms.Compose([
+    transforms.ColorJitter(),
+    transforms.ToTensor()
+])
+
+dataset = MNIST('data/MNIST', transform=transformation)
 dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+
 for data in dataloader:
     img, _ = data
     img = img.view(img.size(0), -1).numpy().tolist()
