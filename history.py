@@ -12,9 +12,10 @@ class History():
     def store(self, s):
         self.s.append(s)
 
-    def get_minibatches(self, batch_size, num_batches):
+    def get_minibatches(self, batch_size):
         count = min(batch_size, len(self.s))
+        num_batches = len(self.s) // count
 
         for _ in range(num_batches):
             batch = random.sample(self.s, count)
-            yield torch.FloatTensor(batch)
+            yield torch.stack(batch)

@@ -7,11 +7,13 @@ from beta_vae.model import Model
 from beta_vae.visualize import *
 
 class BetaVAE():
-    def __init__(self, n_obs, num_epochs, batch_size, lr, beta):
+    def __init__(self, n_obs, num_epochs, batch_size, lr, beta, save_iter, shape):
         self.num_epochs = num_epochs
         self.batch_size = batch_size
         self.lr = lr
         self.beta = beta
+        self.save_iter = save_iter
+        self.shape = shape
 
         self.n_obs = n_obs
 
@@ -35,7 +37,7 @@ class BetaVAE():
 
         for epoch in range(self.num_epochs):
 
-            minibatches = history.get_minibatches(self.batch_size, self.num_epochs)
+            minibatches = history.get_minibatches(self.batch_size)
             for data in minibatches:
 
                 out, mu, log_var = self.vae(data)
@@ -46,8 +48,8 @@ class BetaVAE():
                 loss.backward()
                 optimizer.step()
 
-            if epoch == 0 or epoch % 20 == 19:
-                pic = out.data.view(out.size(0), 1, 28, 28)
+            if epoch == 0 or epoch % self.save_iter == self.save_iter - 1:
+                pic = out.data.view(out.size(0), 1, self.shape[0], self.shape[1])
                 save_image(pic, 'img/betaVae_' + str(epoch+1) + '_epochs.png')
 
             # plot loss

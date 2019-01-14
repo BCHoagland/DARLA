@@ -7,10 +7,12 @@ from dae.model import Model
 from dae.visualize import *
 
 class DAE():
-    def __init__(self, n_obs, num_epochs, batch_size, lr):
+    def __init__(self, n_obs, num_epochs, batch_size, lr, save_iter, shape):
         self.num_epochs = num_epochs
         self.batch_size = batch_size
         self.lr = lr
+        self.save_iter = save_iter
+        self.shape = shape
 
         self.dae = Model(n_obs)
 
@@ -27,10 +29,10 @@ class DAE():
 
         for epoch in range(self.num_epochs):
 
-            minibatches = history.get_minibatches(self.batch_size, self.num_epochs)
+            minibatches = history.get_minibatches(self.batch_size)
             for data in minibatches:
 
-                out = self.dae(data)
+                out = self.dae(data.squeeze(1))
 
                 # calculate loss and update network
                 loss = torch.pow(data - out, 2).mean()
@@ -38,8 +40,8 @@ class DAE():
                 loss.backward()
                 optimizer.step()
 
-            if epoch == 0 or epoch % 20 == 19:
-                pic = out.data.view(out.size(0), 1, 28, 28)
+            if epoch == 0 or epoch % self.save_iter == self.save_iter - 1:
+                pic = out.data.view(out.size(0), 1, self.shape[0], self.shape[1])
                 save_image(pic, 'img/dae_' + str(epoch+1) + '_epochs.png')
 
             # plot loss
