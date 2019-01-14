@@ -27,7 +27,7 @@ class DAE():
 
         for epoch in range(self.num_epochs):
 
-            minibatches = history.get_minibatches(self.batch_size, self.num_epochs)
+            minibatches = history.get_minibatches(self.batch_size)
             for data in minibatches:
 
                 out = self.dae(data)

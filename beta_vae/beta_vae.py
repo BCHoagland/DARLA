@@ -35,7 +35,7 @@ class BetaVAE():
 
         for epoch in range(self.num_epochs):
 
-            minibatches = history.get_minibatches(self.batch_size, self.num_epochs)
+            minibatches = history.get_minibatches(self.batch_size)
             for data in minibatches:
 
                 out, mu, log_var = self.vae(data)
