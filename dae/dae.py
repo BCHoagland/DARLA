@@ -7,10 +7,11 @@ from dae.model import Model
 from dae.visualize import *
 
 class DAE():
-    def __init__(self, n_obs, num_epochs, batch_size, lr):
+    def __init__(self, n_obs, num_epochs, batch_size, lr, shape):
         self.num_epochs = num_epochs
         self.batch_size = batch_size
         self.lr = lr
+        self.shape = shape
 
         self.dae = Model(n_obs)
 
@@ -39,7 +40,7 @@ class DAE():
                 optimizer.step()
 
             if epoch == 0 or epoch % 20 == 19:
-                pic = out.data.view(out.size(0), 1, 28, 28)
+                pic = out.data.view(out.size(0), 1, self.shape[0], self.shape[1])
                 save_image(pic, 'img/dae_' + str(epoch+1) + '_epochs.png')
 
             # plot loss

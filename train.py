@@ -15,11 +15,12 @@ lr = 1e-4
 beta = 4
 save_iter = 10
 
-n_obs = 28 * 28
+shape = (28, 28)
+n_obs = shape[0] * shape[1]
 
 # create DAE and ß-VAE and their training history
-dae = DAE(n_obs, num_epochs, batch_size, 1e-3)
-beta_vae = BetaVAE(n_obs, num_epochs, batch_size, 1e-4, beta)
+dae = DAE(n_obs, num_epochs, batch_size, 1e-3, shape)
+beta_vae = BetaVAE(n_obs, num_epochs, batch_size, 1e-4, beta, shape)
 history = History()
 
 # fill autoencoder training history with examples
